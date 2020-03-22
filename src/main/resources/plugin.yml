@@ -1,0 +1,6 @@
+name: CheeseUHC
+main: com.cultofcheese.uhc.UHC
+version: 1.0-ALPHA
+author: Block2Block
+website: cultofcheese.com
+description: A UHC Event plugin for the Cult of Cheese
