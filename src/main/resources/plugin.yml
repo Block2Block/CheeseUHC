@@ -4,3 +4,19 @@ version: 1.0-ALPHA
 author: Block2Block
 website: cultofcheese.com
 description: A UHC Event plugin for the Cult of Cheese
+commands:
+  team:
+    description: Team related commands.
+    aliases: ["teams"]
+  lock:
+    description: Lock the server. Host only.
+  unlock:
+    description: Unlock the server. Host only.
+  start:
+    description: Start the game. Host only.
+  force:
+    description: Force a particular event to happen.
+  stats:
+    description: Get statistics about you.
+  teamstats:
+    description: Get statistics about your team.

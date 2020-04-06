@@ -1,7 +1,4 @@
 package com.cultofcheese.uhc.entities;
 
-public class Game {
-
-
-
+public interface UHCParticipant {
 }
