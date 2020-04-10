@@ -8,10 +8,12 @@ import com.cultofcheese.uhc.util.InventoryUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -27,6 +29,12 @@ public class JoinListener implements Listener {
         if (CacheManager.getGame() == null) {
             //This is the host, they needs to configure the game. Open the game menu.
             CacheManager.newConfig(e.getPlayer());
+            e.getPlayer().setGameMode(GameMode.SURVIVAL);
+            e.getPlayer().teleport(new Location(Bukkit.getWorlds().get(0), 0, 100, 0));
+            e.getPlayer().getInventory().clear();
+            e.getPlayer().getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1)});
+            e.getPlayer().setMaxHealth(20);
+            e.getPlayer().setHealth(20);
             new BukkitRunnable(){
                 @Override
                 public void run() {
@@ -58,6 +66,9 @@ public class JoinListener implements Listener {
                 e.getPlayer().setGameMode(GameMode.SURVIVAL);
                 e.getPlayer().teleport(new Location(Bukkit.getWorlds().get(0), 0, 100, 0));
                 e.getPlayer().getInventory().clear();
+                e.getPlayer().getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1)});
+                e.getPlayer().setMaxHealth(20);
+                e.getPlayer().setHealth(20);
             }
 
         }
@@ -75,7 +86,7 @@ public class JoinListener implements Listener {
         } else {
             if (!CacheManager.getGame().isGenerated()) {
                 //Map is still being generated.
-                e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, UHC.c("UHC","The map is currently being generated. In order to prevent lag, you cannot join while this chunk generation is in progress.\n" +
+                e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, UHC.c("UHC","The map is currently being generated. In order to prevent lag, you cannot join while chunk generation is in progress.\n" +
                         "Please try again later."));
             } else if (CacheManager.getGame().getState() == Game.GameState.ACTIVE) {
                 e.allow();

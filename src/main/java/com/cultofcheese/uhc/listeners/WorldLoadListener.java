@@ -19,6 +19,14 @@ public class WorldLoadListener implements Listener {
                     CacheManager.getGame().generateChunks(0);
                 }
             }.runTask(UHC.get());
+        } else if (e.getWorld().getName().equals("uhc_nether")) {
+            //Nether World has been loaded, now start generating chunks. Uses the scheduler to run on the next server tick.
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    CacheManager.getGame().generateChunksNether(0);
+                }
+            }.runTask(UHC.get());
         }
     }
 

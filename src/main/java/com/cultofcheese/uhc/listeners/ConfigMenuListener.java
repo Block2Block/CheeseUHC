@@ -162,6 +162,10 @@ public class ConfigMenuListener implements Listener {
                     }
                     break;
                 case "Nether Mechanics Settings Menu":
+                    if (e.getCurrentItem() == null) {
+                        return;
+                    }
+                    e.setCancelled(true);
                     switch (e.getSlot()) {
                         case 10:
                             CacheManager.getConfig().setNetherEnabled(!CacheManager.getConfig().isNetherEnabled());

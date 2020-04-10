@@ -5,6 +5,7 @@ import com.cultofcheese.uhc.entities.UHCParticipant;
 import com.cultofcheese.uhc.entities.UHCPlayer;
 import com.cultofcheese.uhc.entities.UHCTeam;
 import com.cultofcheese.uhc.entities.exceptions.InvalidConfigurationException;
+import com.cultofcheese.uhc.events.GameStartEvent;
 import com.cultofcheese.uhc.managers.CacheManager;
 import com.cultofcheese.uhc.managers.ScoreboardManager;
 import com.cultofcheese.uhc.util.TitleUtil;
@@ -13,7 +14,11 @@ import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -29,7 +34,7 @@ public class Game {
     /**
      * A list of all possible game states. Any time these are not applicable, there should not be a game in the cache anyway.
      */
-    public enum GameState {WAITING, FULL, USER_LOCK, LOCKED, STARTING, ACTIVE, ENDED}
+    public enum GameState {WAITING, FULL, USER_LOCK, LOCKED, PRESTART, STARTING, ACTIVE, ENDED}
 
     /**
      * A list of all border states during the game.
@@ -42,6 +47,7 @@ public class Game {
     private final List<UHCTeam> teams;
     private final Map<UHCParticipant, Location> spawnAssigned;
     private final World world;
+    private World nether;
     private boolean generated;
     private GameState state;
     private Deque<Location> spawnPoints;
@@ -115,8 +121,6 @@ public class Game {
             minChunkX = minChunkZ = new Location(world, -config.getBorderSize(), 64, -config.getBorderSize()).getChunk().getX();
             maxChunkX = maxChunkZ = new Location(world, config.getBorderSize(), 64, config.getBorderSize()).getChunk().getX();
 
-            Bukkit.getLogger().info("minX=" + minChunkX + ",maxX=" + maxChunkX + ",minZ=" + minChunkZ + ",maxZ=" + maxChunkZ);
-
             int totalChunks = (((maxChunkX-minChunkX) + 1)*((maxChunkZ-minChunkZ) + 1));
             int generatedChunks = preLoaded;
             double lastPercentage = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);;
@@ -136,36 +140,35 @@ public class Game {
                     if (world.loadChunk(x, z, true)) {
                         generatedChunks++;
                         double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);
-                        Bukkit.getLogger().info("Chunk " + x + "," + z + " (" + generatedChunks + "/" + totalChunks + ") generated. Generation " + percent + "% complete");
                         if (percent >= 10 && lastPercentage < 10) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 20 && lastPercentage < 20) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 30 && lastPercentage < 30) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 40 && lastPercentage < 40) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 50 && lastPercentage < 50) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 60 && lastPercentage < 60) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 70 && lastPercentage < 70) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 80 && lastPercentage < 80) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (percent >= 90 && lastPercentage < 90) {
                             lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks);
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (generatedChunks == totalChunks) {
-                            Bukkit.getLogger().info("Chunk Generation 100% complete. " + totalChunks + " total chunks were generated, loaded and unloaded.");
+                            Bukkit.getLogger().info("Chunk Generation for 'uhc' is 100% complete. " + totalChunks + " total chunks were generated, loaded and unloaded.");
                             Bukkit.broadcastMessage(UHC.c("World Generator", "Chunk Generation &e100%&r complete. &e" + totalChunks + "&r total chunks were generated, loaded and unloaded."));
                             border = world.getWorldBorder();
                         }
@@ -191,6 +194,107 @@ public class Game {
                     return;
                 }
             }
+            if (config.isNetherEnabled()) {
+                WorldCreator netherCreator = new WorldCreator("uhc_nether");
+                netherCreator.environment(World.Environment.NETHER);
+                netherCreator.seed(world.getSeed());
+
+                nether = Bukkit.getServer().createWorld(netherCreator);
+            } else {
+                nether = null;
+                generated = true;
+            }
+        }
+    }
+
+    /**
+     * This generates the chunks in the UHC nether world in preparation for the game. This prevents lag while the game is in progress.<br><br>
+     *
+     * <strong>WARNING:</strong> This is likely to cause extreme lag while in progress and should only ever be called once. There is a safeguard in place to prevent the accidental re-generation of the chunks.
+     * Once the game is created, it automatically generates the chunks.<br><br>
+     *
+     * This method will split chunk loading in to chunks of 2000 chunks at a time and then it pauses for 5 seconds, allowing time for the server time to unload all of the chunks and allow the server tick to catch up. This prevents the server from crashing from being unresponsive.<br><br>
+     *
+     * This method will automatically schedule for the chunk to be unloaded once the chunk has been generated.
+     */
+    public void generateChunksNether(int preLoaded) {
+        if (!generated) {
+            int minChunkX, maxChunkX, minChunkZ, maxChunkZ;
+            minChunkX = minChunkZ = new Location(nether, (-config.getBorderSize()) / 8f, 64, (-config.getBorderSize()) / 8f).getChunk().getX();
+            maxChunkX = maxChunkZ = new Location(nether, (config.getBorderSize()) / 8f, 64, (config.getBorderSize()) / 8f).getChunk().getX();
+
+            int totalChunks = (((maxChunkX-minChunkX) + 1)*((maxChunkZ-minChunkZ) + 1));
+            int generatedChunks = preLoaded;
+            double lastPercentage = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);;
+
+            if (preLoaded == 0) {
+                Bukkit.getLogger().info("Generating " + totalChunks + " chunks for world 'uhc_nether'.");
+                Bukkit.broadcastMessage(UHC.c("World Generator", "Generating &e" + totalChunks + "&r chunks for world 'uhc_nether'. &4&lWARNING:&r This may take some time and will more than likely cause severe server lag. The server automatically breaks up the generation of chunks to prevent lag, and completes generation in chunks of 2000 chunks."));
+            }
+
+            int counter = 0;
+            for (int x = minChunkX;x <= maxChunkX;x++) {
+                for (int z = minChunkZ; z <= maxChunkZ; z++) {
+                    if (preLoaded > counter) {
+                        counter++;
+                        continue;
+                    }
+                    if (nether.loadChunk(x, z, true)) {
+                        generatedChunks++;
+                        double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d)) / 10d);
+                        if (percent >= 10 && lastPercentage < 10) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 20 && lastPercentage < 20) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 30 && lastPercentage < 30) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 40 && lastPercentage < 40) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 50 && lastPercentage < 50) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 60 && lastPercentage < 60) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 70 && lastPercentage < 70) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 80 && lastPercentage < 80) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (percent >= 90 && lastPercentage < 90) {
+                            lastPercentage = percent;
+                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
+                        } else if (generatedChunks == totalChunks) {
+                            Bukkit.getLogger().info("Chunk Generation for 'uhc_nether' 100% complete. " + totalChunks + " total chunks were generated, loaded and unloaded.");
+                            Bukkit.broadcastMessage(UHC.c("World Generator", "Chunk Generation &e100%&r complete. &e" + totalChunks + "&r total chunks were generated, loaded and unloaded."));
+                        }
+
+                        if (generatedChunks == preLoaded + 2000) {
+                            final int totalGeneratedChunks = generatedChunks;
+                            //Give the server 5 seconds to chill out and catch up. Splits loads into 2000 chunks at a time. Stops the server from thinking it has stopped responding.
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    generateChunksNether(totalGeneratedChunks);
+                                }
+                            }.runTaskLater(UHC.get(), 100);
+                            return;
+                        }
+                    } else {
+                        Bukkit.getLogger().severe("Generation/Loading for chunk (" + x + "," + z + ") failed!");
+                        Bukkit.broadcastMessage(UHC.c("World Generator", "&cGeneration/Loading for chunk (" + x + "," + z + ") failed!"));
+                    }
+                    nether.unloadChunkRequest(x, z);
+                }
+                if (generatedChunks == preLoaded + 2000) {
+                    return;
+                }
+            }
             generated = true;
         }
     }
@@ -201,9 +305,9 @@ public class Game {
      * @param generatedChunks the amount of generated chunks so far.
      * @param totalChunks the total amount of chunks the plugin has to load.
      */
-    private void chunkGenerationUpdate(int generatedChunks, int totalChunks) {
+    private void chunkGenerationUpdate(int generatedChunks, int totalChunks, String world) {
         Bukkit.getLogger().info("Chunk Generation " + (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d) + "% complete. (" + generatedChunks + "/" + totalChunks + ")");
-        Bukkit.broadcastMessage(UHC.c("World Generator", "Chunk Generation &e" + (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d) + "%&r complete. (" + generatedChunks + "/" + totalChunks + ")"));
+        Bukkit.broadcastMessage(UHC.c("World Generator", "Chunk Generation for '" + world + "' is &e" + (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d) + "%&r complete. (" + generatedChunks + "/" + totalChunks + ")"));
     }
 
     /**
@@ -290,7 +394,7 @@ public class Game {
      */
     public void startGame(int time) {
         if (generated) {
-            state = GameState.LOCKED;
+            state = GameState.PRESTART;
             Bukkit.broadcastMessage(UHC.c("Game Manager", "The game has been started. The server has been locked, and the game is about to start!" + ((config.isTeamed())?" Anyone not on a team will be assigned to one!.":"")));
             if (config.isTeamed()) {
                 UHCTeam assignTeam = null;
@@ -463,6 +567,7 @@ public class Game {
         }
 
         if (config.getBorderStartTimeMinutes() > 0 && config.getBorderSize() > 32) {
+            borderState = BorderState.INACTIVE;
             borderTimer = new BukkitRunnable(){
                 @Override
                 public void run() {
@@ -490,6 +595,40 @@ public class Game {
             }.runTaskLater(UHC.get(), config.getDamageTimeMinutes() * 1200);
         }
 
+        if (config.getStarterItems() != null) {
+            for (UHCPlayer player : players.values()) {
+                player.getPlayer().getInventory().addItem(config.getStarterItems().toArray(new ItemStack[0]));
+            }
+        }
+
+        //Registering crafting recipies
+        ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+        ItemStack godApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+        godApple.setDurability((short) 1);
+
+        ShapedRecipe normalRecipe = new ShapedRecipe(goldenApple);
+        ShapedRecipe godRecipe = new ShapedRecipe(godApple);
+
+        normalRecipe.shape("***","*h*","***");
+        godRecipe.shape("***","*h*","***");
+
+        normalRecipe.setIngredient('*',Material.GOLD_INGOT);
+        normalRecipe.setIngredient('h',Material.SKULL_ITEM);
+
+        godRecipe.setIngredient('*',Material.GOLD_BLOCK);
+        godRecipe.setIngredient('h',Material.SKULL_ITEM);
+
+        Bukkit.getServer().addRecipe(normalRecipe);
+        Bukkit.getServer().addRecipe(godRecipe);
+
+        //Register listeners for game features
+        for (GameFeature feature : GameFeature.values()) {
+            if (config.getFeatureEnabled(feature)) {
+                feature.registerListeners();
+            }
+        }
+
+        Bukkit.getPluginManager().callEvent(new GameStartEvent(this));
     }
 
     /**
@@ -515,7 +654,7 @@ public class Game {
                     continue;
                 }
             }
-            locations.addLast(new Location(world, x, world.getHighestBlockYAt((int) Math.round(x),(int) Math.round(z)) + 2, z));
+            locations.addLast(new Location(world, x, world.getHighestBlockYAt((int) Math.round(x),(int) Math.round(z)), z));
         }
 
         return locations;
@@ -633,10 +772,10 @@ public class Game {
 
                 if (!pvpEnabled) {
                     ScoreboardManager.changeLineGlobal(9, "&6&l«PVP»");
-                    ScoreboardManager.changeLineGlobal(8, ("" + (((config.getPvpTimeMinutes()*60) - gameTime < 60)?(config.getPvpTimeMinutes()*60) - gameTime + " seconds":config.getPvpTimeMinutes() - (gameTime/60) + " minutes")));
+                    ScoreboardManager.changeLineGlobal(8, ("" + (((config.getPvpTimeMinutes()*60) - gameTime < 60)?(config.getPvpTimeMinutes()*60) - gameTime + " seconds ":config.getPvpTimeMinutes() - (gameTime/60) + " minutes ")));
                 } else {
                     ScoreboardManager.changeLineGlobal(9, "&6&l«DAMAGE»");
-                    ScoreboardManager.changeLineGlobal(8, ((damageActive)?"Active":"" + (((config.getDamageTimeMinutes()*60) - gameTime < 60)?(config.getDamageTimeMinutes()*60) - gameTime + " seconds":config.getDamageTimeMinutes() - (gameTime/60) + " minutes")));
+                    ScoreboardManager.changeLineGlobal(8, ((damageActive)?"Active":"" + (((config.getDamageTimeMinutes()*60) - gameTime < 60)?(config.getDamageTimeMinutes()*60) - gameTime + " seconds ":config.getDamageTimeMinutes() - (gameTime/60) + " minutes ")));
                 }
 
                 ScoreboardManager.changeLineGlobal(6, "&6&l«GAME TIME»");
@@ -648,9 +787,9 @@ public class Game {
                             i++;
                         }
                     }
-                    ScoreboardManager.changeLineGlobal(5, "    ");
+                    ScoreboardManager.changeLineGlobal(4, "    ");
                     ScoreboardManager.changeLineGlobal(3, "&6&l«TEAMS ALIVE»");
-                    ScoreboardManager.changeLineGlobal(2, "" + i);
+                    ScoreboardManager.changeLineGlobal(2, "" + i + " ");
                 }
             }
         }.runTaskTimer(UHC.get(), 0, 20);
@@ -735,7 +874,7 @@ public class Game {
     }
 
     public boolean isLocked() {
-        return state == GameState.LOCKED || state == GameState.USER_LOCK;
+        return state == GameState.LOCKED || state == GameState.USER_LOCK || state == GameState.PRESTART || state == GameState.STARTING;
     }
 
     public List<UHCTeam> getTeams() {

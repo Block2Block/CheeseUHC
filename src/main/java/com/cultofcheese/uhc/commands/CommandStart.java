@@ -21,6 +21,19 @@ public class CommandStart implements CommandExecutor {
             if (CacheManager.getGame() != null) {
                 if (CacheManager.getGame().getState() == Game.GameState.WAITING || CacheManager.getGame().getState() == Game.GameState.LOCKED || CacheManager.getGame().getState() == Game.GameState.FULL ||  CacheManager.getGame().getState() == Game.GameState.USER_LOCK) {
                     if (CacheManager.getGame().getHost().getPlayer().getUniqueId().equals(player.getUniqueId())) {
+                        if (CacheManager.getGame().getConfig().isTeamed()) {
+                            if (CacheManager.getGame().getTeams().size() <= 1) {
+                                if (CacheManager.getGame().getPlayers().size() <= CacheManager.getGame().getConfig().getTeamSize()) {
+                                    player.sendMessage(UHC.c("Game Manager", "You cannot start the game with less than enough players to create at least 2 teams."));
+                                    return true;
+                                }
+                            }
+                        } else {
+                            if (CacheManager.getGame().getPlayers().size() <= 1) {
+                                player.sendMessage(UHC.c("Game Manager", "You cannot start the game with less than 2 players."));
+                                return true;
+                            }
+                        }
                         if (args.length == 1) {
                             int i = -1;
                             try {
