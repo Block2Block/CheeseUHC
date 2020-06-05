@@ -49,6 +49,8 @@ public class Game {
     private final World world;
     private World nether;
     private boolean generated;
+    private int generatedChunks;
+    private int chunksToGenerate;
     private GameState state;
     private Deque<Location> spawnPoints;
     private WorldBorder border;
@@ -90,6 +92,7 @@ public class Game {
         players = new HashMap<>();
         teams = new ArrayList<>();
 
+        generatedChunks = 0;
         //Deleting the world if it already exists.
         if (new File(Bukkit.getWorldContainer(),"uhc").exists()) {
             try {
@@ -123,8 +126,9 @@ public class Game {
             maxChunkX = maxChunkZ = new Location(world, config.getBorderSize(), 64, config.getBorderSize()).getChunk().getX();
 
             int totalChunks = (((maxChunkX-minChunkX) + 1)*((maxChunkZ-minChunkZ) + 1));
+            this.chunksToGenerate = totalChunks;
             int generatedChunks = preLoaded;
-            double lastPercentage = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);;
+            double lastPercentage = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);
 
             if (preLoaded == 0) {
                 Bukkit.getLogger().info("Generating " + totalChunks + " chunks for world 'uhc'.");
@@ -140,6 +144,7 @@ public class Game {
                     }
                     if (world.loadChunk(x, z, true)) {
                         generatedChunks++;
+                        this.generatedChunks++;
                         double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);
                         if (percent >= 10 && lastPercentage < 10 || percent >= 20 && lastPercentage < 20 || percent >= 30 && lastPercentage < 30 || percent >= 40 && lastPercentage < 40 || percent >= 50 && lastPercentage < 50 || percent >= 60 && lastPercentage < 60 || percent >= 70 && lastPercentage < 70 || percent >= 80 && lastPercentage < 80 || percent >= 90 && lastPercentage < 90) {
                             lastPercentage = percent;
@@ -198,11 +203,15 @@ public class Game {
      */
     public void generateChunksNether(int preLoaded) {
         if (!generated) {
+            if (preLoaded == 0) {
+                this.generatedChunks = 0;
+            }
             int minChunkX, maxChunkX, minChunkZ, maxChunkZ;
             minChunkX = minChunkZ = new Location(nether, (-config.getBorderSize()) / 8f, 64, (-config.getBorderSize()) / 8f).getChunk().getX();
             maxChunkX = maxChunkZ = new Location(nether, (config.getBorderSize()) / 8f, 64, (config.getBorderSize()) / 8f).getChunk().getX();
 
             int totalChunks = (((maxChunkX-minChunkX) + 1)*((maxChunkZ-minChunkZ) + 1));
+            chunksToGenerate = totalChunks;
             int generatedChunks = preLoaded;
             double lastPercentage = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);;
 
@@ -220,6 +229,7 @@ public class Game {
                     }
                     if (nether.loadChunk(x, z, true)) {
                         generatedChunks++;
+                        this.generatedChunks++;
                         double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d)) / 10d);
                         if (percent >= 10 && lastPercentage < 10 || percent >= 20 && lastPercentage < 20 || percent >= 30 && lastPercentage < 30 || percent >= 40 && lastPercentage < 40 || percent >= 50 && lastPercentage < 50 || percent >= 60 && lastPercentage < 60 || percent >= 70 && lastPercentage < 70 || percent >= 80 && lastPercentage < 80 || percent >= 90 && lastPercentage < 90) {
                             lastPercentage = percent;
@@ -862,6 +872,11 @@ public class Game {
     public BorderState getBorderState() {
         return borderState;
     }
+
+    public double getPercentage() {
+        return (Math.round(((((double) generatedChunks) / ((double) chunksToGenerate)) * 1000d))/10d);
+    }
+
 
     public List<UHCParticipant> participantsAlive() {
         if (config.isTeamed()) {
