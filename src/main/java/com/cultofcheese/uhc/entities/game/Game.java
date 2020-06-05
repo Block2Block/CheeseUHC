@@ -101,6 +101,7 @@ public class Game {
         }
 
         world = Bukkit.getServer().createWorld(new WorldCreator("uhc"));
+        world.setDifficulty(Difficulty.HARD);
         onJoin(getHost().getPlayer());
         gameTime = 0;
     }
@@ -140,31 +141,7 @@ public class Game {
                     if (world.loadChunk(x, z, true)) {
                         generatedChunks++;
                         double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d))/10d);
-                        if (percent >= 10 && lastPercentage < 10) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 20 && lastPercentage < 20) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 30 && lastPercentage < 30) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 40 && lastPercentage < 40) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 50 && lastPercentage < 50) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 60 && lastPercentage < 60) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 70 && lastPercentage < 70) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 80 && lastPercentage < 80) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
-                        } else if (percent >= 90 && lastPercentage < 90) {
+                        if (percent >= 10 && lastPercentage < 10 || percent >= 20 && lastPercentage < 20 || percent >= 30 && lastPercentage < 30 || percent >= 40 && lastPercentage < 40 || percent >= 50 && lastPercentage < 50 || percent >= 60 && lastPercentage < 60 || percent >= 70 && lastPercentage < 70 || percent >= 80 && lastPercentage < 80 || percent >= 90 && lastPercentage < 90) {
                             lastPercentage = percent;
                             chunkGenerationUpdate(generatedChunks, totalChunks, "uhc");
                         } else if (generatedChunks == totalChunks) {
@@ -199,7 +176,9 @@ public class Game {
                 netherCreator.environment(World.Environment.NETHER);
                 netherCreator.seed(world.getSeed());
 
+
                 nether = Bukkit.getServer().createWorld(netherCreator);
+                nether.setDifficulty(Difficulty.HARD);
             } else {
                 nether = null;
                 generated = true;
@@ -242,31 +221,7 @@ public class Game {
                     if (nether.loadChunk(x, z, true)) {
                         generatedChunks++;
                         double percent = (Math.round(((((double) generatedChunks) / ((double) totalChunks)) * 1000d)) / 10d);
-                        if (percent >= 10 && lastPercentage < 10) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 20 && lastPercentage < 20) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 30 && lastPercentage < 30) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 40 && lastPercentage < 40) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 50 && lastPercentage < 50) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 60 && lastPercentage < 60) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 70 && lastPercentage < 70) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 80 && lastPercentage < 80) {
-                            lastPercentage = percent;
-                            chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
-                        } else if (percent >= 90 && lastPercentage < 90) {
+                        if (percent >= 10 && lastPercentage < 10 || percent >= 20 && lastPercentage < 20 || percent >= 30 && lastPercentage < 30 || percent >= 40 && lastPercentage < 40 || percent >= 50 && lastPercentage < 50 || percent >= 60 && lastPercentage < 60 || percent >= 70 && lastPercentage < 70 || percent >= 80 && lastPercentage < 80 || percent >= 90 && lastPercentage < 90) {
                             lastPercentage = percent;
                             chunkGenerationUpdate(generatedChunks, totalChunks, "uhc_nether");
                         } else if (generatedChunks == totalChunks) {
@@ -382,8 +337,8 @@ public class Game {
 
     public void playerLeave(Player player) {
         if (state != GameState.ACTIVE) {
-            ScoreboardManager.changeLineGlobal(14, players.size() + "/" + MAX);
             players.remove(player);
+            ScoreboardManager.changeLineGlobal(14, players.size() + "/" + MAX);
         }
     }
 
@@ -534,15 +489,6 @@ public class Game {
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         TitleUtil.sendHotBar(player, UHC.c(null, "&6&lPlayers will be released in " + i + " seconds!"), ChatColor.GOLD, true);
                         player.playSound(player.getLocation(), Sound.NOTE_PLING, 100, 1);
-                    }
-                    for (UHCParticipant participant : spawnAssigned.keySet()) {
-                        if (participant instanceof UHCPlayer) {
-                            UHCPlayer player = (UHCPlayer) participant;
-                            player.getPlayer().teleport(spawnAssigned.get(player));
-                        } else {
-                            UHCTeam player = (UHCTeam) participant;
-                            player.teleport(spawnAssigned.get(player));
-                        }
                     }
                 }
                 i--;
