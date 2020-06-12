@@ -15,7 +15,6 @@ public class MoveListener implements Listener {
             if (CacheManager.getGame().getState() == Game.GameState.STARTING) {
                 if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
                     e.setTo(e.getFrom());
-                    Bukkit.getLogger().info("Testing");
                 }
             }
         }
