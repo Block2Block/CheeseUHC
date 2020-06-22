@@ -97,6 +97,8 @@ public class JoinListener implements Listener {
                 } else if (CacheManager.getGame().isLocked()) {
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, UHC.c("UHC","This UHC Event is now locked and cannot be joined for new players.\n" +
                             "Please try again later."));
+                } else if (CacheManager.getGame().getState() == Game.GameState.ENDED) {
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, UHC.c("UHC","This UHC Event has now ended. Thanks for playing!"));
                 } else {
                     e.allow();
                 }

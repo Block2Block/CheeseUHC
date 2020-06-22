@@ -1,16 +1,12 @@
 package com.cultofcheese.uhc.commands;
 
 import com.cultofcheese.uhc.UHC;
-import com.cultofcheese.uhc.entities.UHCPlayer;
-import com.cultofcheese.uhc.entities.UHCTeam;
 import com.cultofcheese.uhc.entities.game.Game;
 import com.cultofcheese.uhc.managers.CacheManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class CommandStart implements CommandExecutor {
 

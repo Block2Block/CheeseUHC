@@ -6,7 +6,6 @@ import com.cultofcheese.uhc.entities.game.GameFeature;
 import com.cultofcheese.uhc.entities.game.GameQuantifiedSetting;
 import com.cultofcheese.uhc.managers.CacheManager;
 import com.cultofcheese.uhc.util.InventoryUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -108,7 +107,7 @@ public class ConfigMenuListener implements Listener {
                         case 19:
                             InventoryUtil.changeValue(GameQuantifiedSetting.DAMAGE_TIMER, ((Player) e.getWhoClicked()), e.getCurrentItem());
                             break;
-                        case 29:
+                        case 20:
                             InventoryUtil.changeValue(GameQuantifiedSetting.DAMAGE_AMOUNT, ((Player) e.getWhoClicked()), e.getCurrentItem());
                             break;
                         default:

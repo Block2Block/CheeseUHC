@@ -6,9 +6,10 @@ import com.cultofcheese.uhc.entities.UHCPlayer;
 import com.cultofcheese.uhc.entities.UHCTeam;
 import com.cultofcheese.uhc.entities.game.Game;
 import com.cultofcheese.uhc.entities.game.GameFeature;
+import com.cultofcheese.uhc.events.GameStartEvent;
 import com.cultofcheese.uhc.managers.CacheManager;
 import com.cultofcheese.uhc.util.TitleUtil;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -31,6 +32,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SharedHealth implements Listener {
+
+    @EventHandler
+    public void onGameStart(GameStartEvent e) {
+        for (UHCTeam team : e.getGame().getTeams()) {
+            for (UHCPlayer player : team.getMembers()) {
+                player.getPlayer().setMaxHealth(team.getMembers().size() * 20);
+                player.getPlayer().setHealth(team.getMembers().size() * 20);
+            }
+        }
+    }
 
     @EventHandler
     public void onHealthDamage(EntityRegainHealthEvent e) {

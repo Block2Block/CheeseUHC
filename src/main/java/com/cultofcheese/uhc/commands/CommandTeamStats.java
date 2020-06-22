@@ -1,7 +1,6 @@
 package com.cultofcheese.uhc.commands;
 
 import com.cultofcheese.uhc.UHC;
-import com.cultofcheese.uhc.entities.PlayerStats;
 import com.cultofcheese.uhc.entities.UHCPlayer;
 import com.cultofcheese.uhc.entities.game.Game;
 import com.cultofcheese.uhc.managers.CacheManager;

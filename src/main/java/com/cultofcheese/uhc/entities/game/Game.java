@@ -11,14 +11,13 @@ import com.cultofcheese.uhc.managers.ScoreboardManager;
 import com.cultofcheese.uhc.util.TitleUtil;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -54,7 +53,7 @@ public class Game {
     private GameState state;
     private Deque<Location> spawnPoints;
     private WorldBorder border;
-    private GameConfiguration config;
+    private final GameConfiguration config;
     private long gameTime;
 
     //Keeping track of when pvp is enabled.
@@ -74,6 +73,8 @@ public class Game {
     private BukkitTask startTimer;
     private BukkitTask scoreboardUpdateTimer;
     private BukkitTask gameTimer;
+
+    private ArmorStand armorStand;
 
     /**
      * Creates a brand new game with the specified GameConfiguration.
@@ -363,7 +364,9 @@ public class Game {
             Bukkit.broadcastMessage(UHC.c("Game Manager", "The game has been started. The server has been locked, and the game is about to start!" + ((config.isTeamed())?" Anyone not on a team will be assigned to one!.":"")));
             if (config.isTeamed()) {
                 UHCTeam assignTeam = null;
-                for (UHCPlayer player : players.values()) {
+                Collection<UHCPlayer> uhcPlayers = players.values();
+                Collections.shuffle((List<?>) uhcPlayers);
+                for (UHCPlayer player : uhcPlayers) {
                     if (player.getTeam() == null) {
                         if (config.isForceFill() || config.isRandomTeams()) {
                             boolean wasAssigned = false;
@@ -560,6 +563,8 @@ public class Game {
         //Registering crafting recipies
         ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
         ItemStack godApple = new ItemStack(Material.GOLDEN_APPLE, 1);
+        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1);
+        skull.setDurability((short) 3);;
         godApple.setDurability((short) 1);
 
         ShapedRecipe normalRecipe = new ShapedRecipe(goldenApple);
@@ -568,11 +573,12 @@ public class Game {
         normalRecipe.shape("***","*h*","***");
         godRecipe.shape("***","*h*","***");
 
-        normalRecipe.setIngredient('*',Material.GOLD_INGOT);
-        normalRecipe.setIngredient('h',Material.SKULL_ITEM);
+        normalRecipe.setIngredient('*', Material.GOLD_INGOT);
+        normalRecipe.setIngredient('h', skull.getData());
 
-        godRecipe.setIngredient('*',Material.GOLD_BLOCK);
-        godRecipe.setIngredient('h',Material.SKULL_ITEM);
+        godRecipe.setIngredient('*', Material.GOLD_BLOCK);
+        godRecipe.setIngredient('h', skull.getData());
+
 
         Bukkit.getServer().addRecipe(normalRecipe);
         Bukkit.getServer().addRecipe(godRecipe);
@@ -696,12 +702,15 @@ public class Game {
                 players.playSound(players.getLocation(), Sound.ENDERDRAGON_GROWL, 100, 1);
             }
             damageActive = true;
+            armorStand = world.spawn(new Location(world, 0, 1000, 0), ArmorStand.class);
+            armorStand.setGravity(false);
+            armorStand.setVisible(false);
             damageRepeatTimer = new BukkitRunnable() {
                 @Override
                 public void run() {
                     for (UHCPlayer player : players.values()) {
                         if (!player.isDead()) {
-                            player.getPlayer().damage(config.getDamageAmount());
+                            player.getPlayer().damage(config.getDamageAmount(), armorStand);
                         }
                     }
                 }
@@ -753,15 +762,25 @@ public class Game {
 
     public void end(UHCParticipant winner) {
         state = GameState.ENDED;
+        border.setSize(border.getSize());
         if (winner instanceof UHCTeam) {
             UHCTeam team = (UHCTeam) winner;
             for (Player player : Bukkit.getOnlinePlayers()) {
                 TitleUtil.sendTitle(player, "Team " + (team.getId() + 1), "won the game!", 20, 100, 20, ChatColor.GOLD, ChatColor.WHITE, true, false);
+                player.sendMessage(UHC.c("Game Manager", team.getFormattedName() + " &rwon the game!"));
             }
         } else {
             UHCPlayer player = (UHCPlayer) winner;
             for (Player player2 : Bukkit.getOnlinePlayers()) {
                 TitleUtil.sendTitle(player2,  player.getPlayer().getName(), "won the game!", 20, 100, 20, ChatColor.GOLD, ChatColor.WHITE, true, false);
+                player2.sendMessage(UHC.c("Game Manager", "&e" + player.getPlayer().getName() + " &rwon the game!"));
+            }
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            UHCPlayer uhcPlayer = players.get(player);
+            if (uhcPlayer != null) {
+                uhcPlayer.getPlayerStats().onEnd();
             }
         }
 
@@ -798,20 +817,26 @@ public class Game {
 
         new BukkitRunnable(){
             int runs = 0;
-            final int[][] locations = new int[][]{{32, 32},{0, 32},{-32, 32},{-32, 0}, {-32, -32},{0,-32},{32,-32},{32,0}};
+            final int[][] locations = new int[][]{{28, 28},{0, 28},{-28, 28},{-28, 0}, {-28, -28},{0,-28},{28,-28},{28,0},{0, 0}};
             @Override
             public void run() {
                 for (int[] location : locations) {
-                    Location loc = new Location(Bukkit.getWorld("uhc"), location[0], 70, location[1]);
+                    Location loc = new Location(Bukkit.getWorld("uhc"), location[0], 100, location[1]);
                     Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
                     FireworkMeta fwm = firework.getFireworkMeta();
 
-                    fwm.setPower(2);
+                    fwm.setPower(0);
                     fwm.addEffect(FireworkEffect.builder().with(FireworkEffect.Type.BALL_LARGE).withColor(Color.LIME).build());
 
                     firework.setFireworkMeta(fwm);
 
-                    firework.detonate();
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            firework.detonate();
+                        }
+                    }.runTaskLater(UHC.get(), 1);
+
                 }
                 runs++;
                 if (runs >= 15) {

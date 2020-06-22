@@ -2,7 +2,6 @@ package com.cultofcheese.uhc.listeners;
 
 import com.cultofcheese.uhc.entities.game.Game;
 import com.cultofcheese.uhc.managers.CacheManager;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;

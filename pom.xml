@@ -51,6 +51,20 @@
                             </excludes>
                         </filter>
                         <filter>
+                            <artifact>org.apache.commons:commons-text</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.apache.commons:commons-lang3</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.txt</exclude>
+                                <exclude>META-INF/*.MF</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
                             <artifact>commons-logging:commons-logging</artifact>
                             <excludes>
                                 <exclude>META-INF/*.txt</exclude>
@@ -83,6 +97,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.8</version>
         </dependency>
     </dependencies>
 

@@ -7,10 +7,11 @@ import com.cultofcheese.uhc.entities.game.Game;
 import com.cultofcheese.uhc.entities.game.GameFeature;
 import com.cultofcheese.uhc.managers.CacheManager;
 import com.cultofcheese.uhc.util.TitleUtil;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -54,7 +55,7 @@ public class DamageListener implements Listener {
                             e.setCancelled(true);
                             player.setMaxHealth(20);
                             player.setHealth(20);
-                            Bukkit.broadcastMessage(UHC.c("Death", "&e" + player.getName() + "&r was killed by &e" + ((e.getDamager() instanceof Player)?((Player) e.getDamager()).getName():e.getDamager().getType().getName()) + "&r."));
+                            Bukkit.broadcastMessage(UHC.c("Death", "&e" + player.getName() + "&r was killed by &e" + ((e.getDamager() instanceof Player)?((Player) e.getDamager()).getName():((e.getDamager() instanceof ArmorStand)?"End Game Damage":e.getDamager().getType().getName())) + "&r."));
                             if (e.getDamager() instanceof Player) {
                                 ((Player) e.getDamager()).setStatistic(Statistic.PLAYER_KILLS, ((Player) e.getDamager()).getStatistic(Statistic.PLAYER_KILLS) + 1);
                             }
@@ -129,6 +130,12 @@ public class DamageListener implements Listener {
                                 }
                             }
 
+                        } else {
+                            if (e.getDamager() instanceof ArmorStand) {
+                                //To prevent the knockback from the entity (which will hit away from the centre due to entity position).
+                                e.setCancelled(true);
+                                player.damage(e.getFinalDamage());
+                            }
                         }
                     }
                 } else {

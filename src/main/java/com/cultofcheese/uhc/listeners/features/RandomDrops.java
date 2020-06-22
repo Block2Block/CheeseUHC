@@ -14,7 +14,7 @@ import java.util.Random;
 
 public class RandomDrops implements Listener {
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @EventHandler
     public void onItemDrop(EntitySpawnEvent e) {
