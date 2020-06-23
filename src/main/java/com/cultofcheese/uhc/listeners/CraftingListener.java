@@ -45,14 +45,18 @@ public class CraftingListener implements Listener {
                     if (player.getItemInHand().getDurability() == 3) {
                         //This is a skull, check if it is a golden skull.
                         if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-                            if (player.getItemInHand().getItemMeta().getDisplayName().equals(UHC.c(null, "&6&lGolden Head"))) {
-                                ItemStack is = player.getItemInHand().clone();
-                                is.setAmount(is.getAmount() - 1);
-                                player.setItemInHand(is);
-                                player.playSound(player.getLocation(), Sound.EAT, 100, 1);
-                                player.removePotionEffect(PotionEffectType.REGENERATION);
-                                player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 160, 2, false, true));
-                                e.setCancelled(true);
+                            if (player.getItemInHand().getItemMeta() != null) {
+                                if (player.getItemInHand().getItemMeta().getDisplayName() != null) {
+                                    if (player.getItemInHand().getItemMeta().getDisplayName().equals(UHC.c(null, "&6&lGolden Head"))) {
+                                        ItemStack is = player.getItemInHand().clone();
+                                        is.setAmount(is.getAmount() - 1);
+                                        player.setItemInHand(is);
+                                        player.playSound(player.getLocation(), Sound.EAT, 100, 1);
+                                        player.removePotionEffect(PotionEffectType.REGENERATION);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 160, 2, false, true));
+                                        e.setCancelled(true);
+                                    }
+                                }
                             }
                         }
                     }
