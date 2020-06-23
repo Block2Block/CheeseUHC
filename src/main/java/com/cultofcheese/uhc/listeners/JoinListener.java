@@ -33,6 +33,9 @@ public class JoinListener implements Listener {
             e.getPlayer().teleport(new Location(Bukkit.getWorlds().get(0), 0, 100, 0));
             e.getPlayer().getInventory().clear();
             e.getPlayer().getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1)});
+            e.getPlayer().setLevel(0);
+            e.getPlayer().setExp(0);
+            e.getPlayer().setTotalExperience(0);
             e.getPlayer().setMaxHealth(20);
             e.getPlayer().setHealth(20);
             new BukkitRunnable(){
@@ -67,6 +70,9 @@ public class JoinListener implements Listener {
                 e.getPlayer().teleport(new Location(Bukkit.getWorlds().get(0), 0, 100, 0));
                 e.getPlayer().getInventory().clear();
                 e.getPlayer().getInventory().setArmorContents(new ItemStack[]{new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1),new ItemStack(Material.AIR, 1)});
+                e.getPlayer().setLevel(0);
+                e.getPlayer().setExp(0);
+                e.getPlayer().setTotalExperience(0);
                 e.getPlayer().setMaxHealth(20);
                 e.getPlayer().setHealth(20);
             }

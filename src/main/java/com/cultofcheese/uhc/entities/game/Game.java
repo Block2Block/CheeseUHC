@@ -15,9 +15,11 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -561,27 +563,23 @@ public class Game {
         }
 
         //Registering crafting recipies
-        ItemStack goldenApple = new ItemStack(Material.GOLDEN_APPLE, 1);
-        ItemStack godApple = new ItemStack(Material.GOLDEN_APPLE, 1);
-        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1);
-        skull.setDurability((short) 3);;
-        godApple.setDurability((short) 1);
 
-        ShapedRecipe normalRecipe = new ShapedRecipe(goldenApple);
-        ShapedRecipe godRecipe = new ShapedRecipe(godApple);
+        ItemStack goldenHead = new ItemStack(Material.SKULL_ITEM, 1);
+        ItemMeta im = goldenHead.getItemMeta();
+        im.setDisplayName(UHC.c(null, "&6&lGolden Head"));
+        goldenHead.setItemMeta(im);
+        goldenHead.setDurability((short) 3);
+        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1);
+        skull.setDurability((short) 3);
+
+        ShapedRecipe normalRecipe = new ShapedRecipe(goldenHead);
 
         normalRecipe.shape("***","*h*","***");
-        godRecipe.shape("***","*h*","***");
 
         normalRecipe.setIngredient('*', Material.GOLD_INGOT);
         normalRecipe.setIngredient('h', skull.getData());
 
-        godRecipe.setIngredient('*', Material.GOLD_BLOCK);
-        godRecipe.setIngredient('h', skull.getData());
-
-
         Bukkit.getServer().addRecipe(normalRecipe);
-        Bukkit.getServer().addRecipe(godRecipe);
 
         //Register listeners for game features
         for (GameFeature feature : GameFeature.values()) {
