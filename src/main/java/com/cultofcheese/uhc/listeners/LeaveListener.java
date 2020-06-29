@@ -1,8 +1,12 @@
 package com.cultofcheese.uhc.listeners;
 
 import com.cultofcheese.uhc.UHC;
+import com.cultofcheese.uhc.entities.UHCParticipant;
 import com.cultofcheese.uhc.managers.CacheManager;
+import com.cultofcheese.uhc.util.TitleUtil;
+import org.apache.commons.text.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -63,15 +67,22 @@ public class LeaveListener implements Listener {
                                         blockRight.setType(Material.CHEST);
                                     }
 
-                                    Chest chest = (Chest) xLeft.getBlock().getState();
+                                    Chest chestLeft = (Chest) xLeft.getBlock().getState();
+                                    Chest chestRight = (Chest) xRight.getBlock().getState();
                                     new BukkitRunnable() {
                                         @Override
                                         public void run() {
+                                            int i = 0;
                                             for (ItemStack item : items) {
                                                 if (item == null) {
                                                     continue;
                                                 }
-                                                chest.getBlockInventory().addItem(item);
+                                                i++;
+                                                if (i >= 28) {
+                                                    chestRight.getBlockInventory().addItem(item);
+                                                    continue;
+                                                }
+                                                chestLeft.getBlockInventory().addItem(item);
                                             }
                                         }
                                     }.runTaskAsynchronously(UHC.get());
@@ -79,6 +90,28 @@ public class LeaveListener implements Listener {
                                 e.getPlayer().getInventory().clear();
                                 Bukkit.getWorld("uhc").strikeLightningEffect(e.getPlayer().getLocation());
                                 CacheManager.getGame().playerLeave(e.getPlayer());
+
+                                Bukkit.broadcastMessage(UHC.c("Death", "&e" + e.getPlayer().getName() + "&r left the game while PvP was enabled, they are now out of the game!"));
+
+                                if (CacheManager.getGame().getConfig().isTeamed()) {
+                                    if (CacheManager.getGame().getPlayers().get(e.getPlayer()).getTeam().aliveMembers() <= 0) {
+                                        List<UHCParticipant> alive = CacheManager.getGame().participantsAlive();
+                                        if (alive.size() > 1) {
+                                            for (Player player2 : Bukkit.getOnlinePlayers()) {
+                                                TitleUtil.sendTitle(player2, CacheManager.getGame().getPlayers().get(e.getPlayer()).getTeam().getFormattedName(), "has been eliminated from the game!", 20, 100, 20, ChatColor.WHITE, ChatColor.WHITE, true, false);
+                                            }
+                                        } else {
+                                            //A team has won.
+                                            CacheManager.getGame().end(alive.get(0));
+                                        }
+                                    }
+                                } else {
+                                    List<UHCParticipant> alive = CacheManager.getGame().participantsAlive();
+                                    if (alive.size() == 1) {
+                                        //A player has won.
+                                        CacheManager.getGame().end(alive.get(0));
+                                    }
+                                }
                             } else {
                                 CacheManager.getSpectators().remove(e.getPlayer());
                             }
@@ -92,12 +125,12 @@ public class LeaveListener implements Listener {
                 case ENDED:
                     break;
                 default:
-                    CacheManager.getGame().playerLeave(e.getPlayer());
                     if (CacheManager.getGame().getConfig().isTeamed()) {
                         for (Player player : Bukkit.getOnlinePlayers()) {
                             CacheManager.getGame().getPlayers().get(player).removeFromTeam(e.getPlayer(), CacheManager.getGame().getPlayers().get(e.getPlayer()).getTeam());
                         }
                     }
+                    CacheManager.getGame().playerLeave(e.getPlayer());
                     break;
             }
         }

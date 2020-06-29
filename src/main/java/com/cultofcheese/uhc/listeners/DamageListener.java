@@ -92,15 +92,22 @@ public class DamageListener implements Listener {
                                         blockRight.setType(Material.CHEST);
                                     }
 
-                                    Chest chest = (Chest) xLeft.getBlock().getState();
+                                    Chest chestLeft = (Chest) xLeft.getBlock().getState();
+                                    Chest chestRight = (Chest) xRight.getBlock().getState();
                                     new BukkitRunnable() {
                                         @Override
                                         public void run() {
+                                            int i = 0;
                                             for (ItemStack item : items) {
                                                 if (item == null) {
                                                     continue;
                                                 }
-                                                chest.getBlockInventory().addItem(item);
+                                                i++;
+                                                if (i >= 28) {
+                                                    chestRight.getBlockInventory().addItem(item);
+                                                    continue;
+                                                }
+                                                chestLeft.getBlockInventory().addItem(item);
                                             }
                                         }
                                     }.runTaskAsynchronously(UHC.get());
@@ -198,15 +205,22 @@ public class DamageListener implements Listener {
                                                 blockRight.setType(Material.CHEST);
                                             }
 
-                                            Chest chest = (Chest) xLeft.getBlock().getState();
+                                            Chest chestLeft = (Chest) xLeft.getBlock().getState();
+                                            Chest chestRight = (Chest) xRight.getBlock().getState();
                                             new BukkitRunnable() {
                                                 @Override
                                                 public void run() {
+                                                    int i = 0;
                                                     for (ItemStack item : items) {
                                                         if (item == null) {
                                                             continue;
                                                         }
-                                                        chest.getBlockInventory().addItem(item);
+                                                        i++;
+                                                        if (i >= 28) {
+                                                            chestRight.getBlockInventory().addItem(item);
+                                                            continue;
+                                                        }
+                                                        chestLeft.getBlockInventory().addItem(item);
                                                     }
                                                 }
                                             }.runTaskAsynchronously(UHC.get());

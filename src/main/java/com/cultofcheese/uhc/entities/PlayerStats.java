@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 public class PlayerStats {
 
-    private final Player player;
+    private Player player;
     private int damageTaken;
     private int damageDealt;
     private int kills;
@@ -123,5 +123,9 @@ public class PlayerStats {
         } else {
             return player.getStatistic(Statistic.PLAYER_KILLS);
         }
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 }

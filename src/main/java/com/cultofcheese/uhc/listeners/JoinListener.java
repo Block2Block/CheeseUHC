@@ -63,6 +63,8 @@ public class JoinListener implements Listener {
                     CacheManager.getSpectators().add(e.getPlayer());
                 } else {
                     CacheManager.playerRejoin(uhcPlayer);
+                    uhcPlayer.rejoin(e.getPlayer());
+                    CacheManager.getGame().onRejoin(uhcPlayer);
                 }
             } else {
                 CacheManager.getGame().onJoin(e.getPlayer());

@@ -11,6 +11,7 @@ import com.cultofcheese.uhc.managers.ScoreboardManager;
 import com.cultofcheese.uhc.util.TitleUtil;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
+import org.bukkit.block.Biome;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -287,7 +288,7 @@ public class Game {
         if (players.size() + 1 >= MAX) {
             this.state = GameState.FULL;
         }
-        player.sendMessage(UHC.c("Cult of Cheese", "Welcome to the Cult of Cheese UHC event! We will be beginning shortly, feel free to stick around! The host today is: &e" + config.getHost().getPlayer().getName() + "&r."));
+        player.sendMessage(UHC.c("Cult of Cheese", "Welcome to the Cult of Cheese UHC event! We will be beginning shortly, feel free to stick around! The host today is: &e" + config.getHost().getPlayer().getName() + "&r.\n\nThis UHC plugin was created and provided for this event by Block2Block."));
         UHCPlayer uhcPlayer = new UHCPlayer(player);
         players.put(player, uhcPlayer);
 
@@ -349,8 +350,17 @@ public class Game {
     }
 
     public void playerLeave(Player player) {
+        if (CacheManager.getGame().getConfig().isTeamed()) {
+            if (CacheManager.getGame().getPlayers().get(player).getTeam() != null) {
+                for (Player player2 : Bukkit.getOnlinePlayers()) {
+                    if (!player.equals(player2)) {
+                        CacheManager.getGame().getPlayers().get(player2).removeFromTeam(player, CacheManager.getGame().getPlayers().get(player).getTeam());
+                    }
+                }
+            }
+        }
+        players.remove(player);
         if (state != GameState.ACTIVE) {
-            players.remove(player);
             ScoreboardManager.changeLineGlobal(14, players.size() + "/" + MAX);
         }
     }
@@ -366,8 +376,8 @@ public class Game {
             Bukkit.broadcastMessage(UHC.c("Game Manager", "The game has been started. The server has been locked, and the game is about to start!" + ((config.isTeamed())?" Anyone not on a team will be assigned to one!.":"")));
             if (config.isTeamed()) {
                 UHCTeam assignTeam = null;
-                Collection<UHCPlayer> uhcPlayers = players.values();
-                Collections.shuffle((List<?>) uhcPlayers);
+                List<UHCPlayer> uhcPlayers = new ArrayList<>(players.values());
+                Collections.shuffle(uhcPlayers);
                 for (UHCPlayer player : uhcPlayers) {
                     if (player.getTeam() == null) {
                         if (config.isForceFill() || config.isRandomTeams()) {
@@ -562,7 +572,7 @@ public class Game {
             }
         }
 
-        //Registering crafting recipies
+        //Registering crafting recipe
 
         ItemStack goldenHead = new ItemStack(Material.SKULL_ITEM, 1);
         ItemMeta im = goldenHead.getItemMeta();
@@ -614,7 +624,13 @@ public class Game {
                     continue;
                 }
             }
-            locations.addLast(new Location(world, x, world.getHighestBlockYAt((int) Math.round(x),(int) Math.round(z)), z));
+
+            Location location = new Location(world, Math.round(x) + 0.5, world.getHighestBlockYAt((int) Math.round(Math.round(x) + 0.5),(int) Math.round(Math.round(z) + 0.5)) + 0.5, Math.round(z) + 0.5);
+            if (location.getBlock().getBiome() == Biome.RIVER || location.getBlock().getBiome() == Biome.OCEAN || location.getBlock().getBiome() == Biome.DEEP_OCEAN) {
+                i--;
+                continue;
+            }
+            locations.addLast(location);
         }
 
         return locations;
@@ -765,7 +781,7 @@ public class Game {
             UHCTeam team = (UHCTeam) winner;
             for (Player player : Bukkit.getOnlinePlayers()) {
                 TitleUtil.sendTitle(player, "Team " + (team.getId() + 1), "won the game!", 20, 100, 20, ChatColor.GOLD, ChatColor.WHITE, true, false);
-                player.sendMessage(UHC.c("Game Manager", team.getFormattedName() + " &rwon the game!"));
+                player.sendMessage(UHC.c("Game Manager", team.getFormattedName() + "&rwon the game!"));
             }
         } else {
             UHCPlayer player = (UHCPlayer) winner;
@@ -918,6 +934,16 @@ public class Game {
                 }
             }
             return alive;
+        }
+    }
+
+    public void onRejoin(UHCPlayer player) {
+        for (Map.Entry<Player, UHCPlayer> entry : players.entrySet()) {
+            if (entry.getValue().equals(player)) {
+                players.remove(entry.getKey());
+                players.put(player.getPlayer(), player);
+                break;
+            }
         }
     }
 

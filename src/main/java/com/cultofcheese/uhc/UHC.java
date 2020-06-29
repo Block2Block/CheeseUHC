@@ -16,7 +16,7 @@ public class UHC extends JavaPlugin {
     public void onEnable() {
         i = this;
 
-        registerListeners(new JoinListener(), new StatsListener(), new WorldLoadListener(), new ConfigMenuListener(), new DamageHungerListener(), new WeatherListener(), new LeaveListener(), new DamageListener(), new NetherTeleportListener(), new CraftingListener(), new MoveListener(), new PingListener());
+        registerListeners(new JoinListener(), new StatsListener(), new WorldLoadListener(), new ConfigMenuListener(), new DamageHungerListener(), new WeatherListener(), new LeaveListener(), new DamageListener(), new NetherTeleportListener(), new CraftingListener(), new MoveListener(), new PingListener(), new ChatFormatter());
 
         getCommand("team").setExecutor(new CommandTeam());
         getCommand("start").setExecutor(new CommandStart());

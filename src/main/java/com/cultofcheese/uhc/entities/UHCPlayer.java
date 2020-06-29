@@ -14,7 +14,7 @@ import org.bukkit.scoreboard.Team;
 @SuppressWarnings("deprecation")
 public class UHCPlayer implements UHCParticipant {
 
-    private final Player player;
+    private Player player;
     private PlayerStats stats;
     private final Scoreboard scoreboard;
     private final Objective objective;
@@ -34,6 +34,7 @@ public class UHCPlayer implements UHCParticipant {
     public void onGameStart() {
         //Loading stats
         stats = new PlayerStats(player);
+        player.getEnderChest().clear();
     }
 
     public PlayerStats getPlayerStats() {
@@ -111,5 +112,10 @@ public class UHCPlayer implements UHCParticipant {
 
     public UHCTeam getTeam() {
         return team;
+    }
+
+    public void rejoin(Player player) {
+        this.player = player;
+        stats.setPlayer(player);
     }
 }

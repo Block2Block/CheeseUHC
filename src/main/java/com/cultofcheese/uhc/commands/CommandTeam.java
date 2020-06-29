@@ -78,7 +78,7 @@ public class CommandTeam implements CommandExecutor {
                                                                 if (CacheManager.getInvites().containsKey(invitee)) {
                                                                     if (CacheManager.getInvites().get(invitee) == CacheManager.getGame().getPlayers().get(player).getTeam()) {
                                                                         CacheManager.getInvites().remove(invitee);
-                                                                        player.sendMessage(UHC.c("Teams","Your invitation to " + invitee.getName() + "has expired."));
+                                                                        player.sendMessage(UHC.c("Teams","Your invitation to &e" + invitee.getName() + "&r has expired."));
                                                                         invitee.sendMessage(UHC.c("Teams","The invitation has expired."));
                                                                     }
                                                                 }
